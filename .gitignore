@@ -4,5 +4,6 @@ __pycache__/
 .env
 results/*.json
 results/*.md
+!results/README.md
 transcripts/*.jsonl
 submission.zip
