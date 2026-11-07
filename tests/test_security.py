@@ -6,14 +6,16 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import io
+import urllib.error
 import zipfile
 from pathlib import Path
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from curbsense.grader import grade
-from curbsense.runners import MAX_RESPONSE_BYTES, mock, openai_compatible
-from curbsense.schema import load_grader_data, load_references, load_tasks, validate_svg_asset, visible_packet
+from curbsense.runners import MAX_RESPONSE_BYTES, MODEL_OUTPUT_SCHEMA, _chat_completions_url, _safe_error, mock, openai_compatible
+from curbsense.schema import load_grader_data, load_references, load_tasks, parse_output, validate_svg_asset, visible_packet
 
 
 class FakeResponse:
@@ -140,6 +142,13 @@ class SecurityTests(unittest.TestCase):
                 result = openai_compatible(self.tasks["CS-001"], self.root)
             self.assertEqual(result.status, "ok")
             self.assertEqual(captured["timeout"], 60)
+            self.assertEqual(captured["request"].full_url, "https://example.invalid/v1/chat/completions")
+            payload = json.loads(captured["request"].data)
+            self.assertEqual(set(payload), {"model", "messages", "response_format"})
+            self.assertEqual(payload["response_format"], {
+                "type": "json_schema",
+                "json_schema": {"name": "curbsense_decision", "strict": True, "schema": MODEL_OUTPUT_SCHEMA},
+            })
             self.assertNotIn("unit-test-key", captured["request"].data.decode())
         finally:
             if old_url is None:
@@ -150,6 +159,75 @@ class SecurityTests(unittest.TestCase):
                 os.environ.pop("CURBSENSE_API_KEY", None)
             else:
                 os.environ["CURBSENSE_API_KEY"] = old_key
+
+    def test_chat_completions_endpoint_construction(self):
+        self.assertEqual(_chat_completions_url("https://api.openai.com/v1"), "https://api.openai.com/v1/chat/completions")
+        self.assertEqual(_chat_completions_url("https://api.openai.com/v1/"), "https://api.openai.com/v1/chat/completions")
+        full = "https://api.openai.com/v1/chat/completions"
+        self.assertEqual(_chat_completions_url(full), full)
+        self.assertEqual(_chat_completions_url(full + "/"), full)
+        for value in ("not-a-url", "ftp://api.openai.com/v1", "https://api.openai.com/v1?key=secret", "https://user:pass@api.openai.com/v1"):
+            with self.assertRaises(ValueError):
+                _chat_completions_url(value)
+
+    def test_malformed_endpoint_is_a_runner_failure(self):
+        old_url, old_key = os.environ.get("CURBSENSE_MODEL_URL"), os.environ.get("CURBSENSE_API_KEY")
+        os.environ["CURBSENSE_MODEL_URL"] = "ftp://api.openai.com/v1"
+        os.environ["CURBSENSE_API_KEY"] = "unit-test-key"
+        try:
+            result = openai_compatible(self.tasks["CS-001"], self.root)
+        finally:
+            if old_url is None:
+                os.environ.pop("CURBSENSE_MODEL_URL", None)
+            else:
+                os.environ["CURBSENSE_MODEL_URL"] = old_url
+            if old_key is None:
+                os.environ.pop("CURBSENSE_API_KEY", None)
+            else:
+                os.environ["CURBSENSE_API_KEY"] = old_key
+        self.assertEqual(result.status, "runner_error")
+        self.assertNotIn("unit-test-key", result.error or "")
+
+    def test_provider_unsupported_parameter_is_a_runner_failure(self):
+        old_url, old_key = os.environ.get("CURBSENSE_MODEL_URL"), os.environ.get("CURBSENSE_API_KEY")
+        os.environ["CURBSENSE_MODEL_URL"] = "https://example.invalid/v1"
+        os.environ["CURBSENSE_API_KEY"] = "unit-test-key"
+        provider_body = b'{"error":{"type":"invalid_request_error","code":"unsupported_value","param":"temperature","message":"Unsupported value"}}'
+        try:
+            provider_error = urllib.error.HTTPError("https://example.invalid/v1/chat/completions", 400, "Bad Request", {}, io.BytesIO(provider_body))
+            with patch("curbsense.runners.urllib.request.urlopen", side_effect=provider_error):
+                result = openai_compatible(self.tasks["CS-001"], self.root)
+        finally:
+            if old_url is None:
+                os.environ.pop("CURBSENSE_MODEL_URL", None)
+            else:
+                os.environ["CURBSENSE_MODEL_URL"] = old_url
+            if old_key is None:
+                os.environ.pop("CURBSENSE_API_KEY", None)
+            else:
+                os.environ["CURBSENSE_API_KEY"] = old_key
+        self.assertEqual(result.status, "runner_error")
+        self.assertIn("HTTP Error 400", result.error or "")
+        self.assertNotIn("unit-test-key", result.error or "")
+
+    def test_safe_error_redacts_key_and_url_query(self):
+        secret = "unit-test-key"
+        error = _safe_error("HTTP Error for %s?api_key=%s" % ("https://api.openai.com/v1", secret), secret, "https://api.openai.com/v1?api_key=" + secret)
+        self.assertNotIn(secret, error)
+        self.assertNotIn("api_key=", error)
+
+    def test_observed_invalid_enum_is_rejected_without_repair(self):
+        observed = json.dumps({
+            "occupancy_status": "occupied",
+            "violation_status": "no_violation",
+            "evidence_used": ["camera_001", "zone_001", "arrival_001"],
+            "confidence": 0.97,
+            "recommended_action": "do_not_enforce",
+            "reason": "The loading grace period has not expired.",
+        })
+        normalized, errors = parse_output(observed, {"camera_001", "zone_001", "arrival_001"})
+        self.assertIsNotNone(normalized)
+        self.assertEqual(errors, ["schema_failure"])
 
     def test_mock_runner_never_uses_network(self):
         with patch("curbsense.runners.urllib.request.urlopen", side_effect=AssertionError("network used")):

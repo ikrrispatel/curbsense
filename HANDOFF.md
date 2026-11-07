@@ -2,32 +2,32 @@
 
 ## Goal
 
-Maintain a deterministic, evidence-grounded CurbSense evaluation harness and complete the final security milestone before any real-model trials.
+Maintain a deterministic, evidence-grounded CurbSense evaluation harness and collect controlled real-model evidence without weakening the contract.
 
 ## Current State
 
-The hardened deterministic grader is pushed on `origin/main`. Eight tasks and their physical reference outputs are validated. The starting commit for this milestone is `3707bb47f7dc6280e5c89d96f71f34b7b608ee5b`; the repository was clean at that point. Mock validation is harness validation only, not real-model evidence. No real-model trials or limitation claims exist yet.
+The hardened deterministic grader is pushed on `origin/main`. Eight tasks and their physical reference outputs are validated. The repository started this work at `4d5ed297d5fa1d11aa21880b143d39cec61779a1`; the current worktree has uncommitted adapter, test, ignore-rule, handoff, and generated-evidence changes. The controlled real run used provider/model `gpt-6-astra`, three trials, and produced exactly 24 records with zero runner/provider failures. All 24 outputs parsed successfully; 21/24 safe decisions passed. Trial pass rates were 7/8, 7/8, and 7/8, with grade-rate variance 0.0. The report hash is `fa1659a62b6fdccd1464509a576d88c0392f49163008c74f743644aa62167e43`. This is evidence for one model on eight synthetic tasks only, not a superiority or generalization claim.
 
 ## Current Task
 
-Complete security verification, document the handoff, run reproducibility and package checks, and push the verified documentation/security commit. Real-model trials are explicitly out of scope for this task.
+Complete the controlled real-model evidence handoff. The adapter targets `/chat/completions`, omits explicit temperature, and sends strict public JSON Schema output configuration. The CS-001 gate passed before the full run. The full run completed with deterministic grading, sanitized representative failure transcripts, package validation, secret scanning, traversal checks, and reproducibility checks.
 
 ## Files Being Edited
 
-`HANDOFF.md`, `README.md`, `tests/test_security.py`, `curbsense/schema.py`, `curbsense/runners.py`, and `scripts/package_submission.py`.
+`HANDOFF.md`, `.gitignore`, `.env.example`, `tests/test_security.py`, and `curbsense/runners.py`. Ignored real artifacts are `results/real/gpt-6-astra.json`, `results/real/gpt-6-astra-report.md`, `results/real/gpt-6-astra-cs001-schema-diagnostic.json`, and `results/real/transcripts/gpt-6-astra-CS-002-failures.json`. The representative transcript contains sanitized model output and metadata only; it has no credentials, authorization headers, or hidden reasoning. Provider-failure artifacts remain at `results/real/gpt-6-astra-provider-failure.json` and `results/real/gpt-6-astra-provider-failure-400.json` with `model_evidence=false`.
 
 ## Decisions Made
 
-Visible task packets remain separate from hidden grader data and physical references. Grading derives the expected decision independently from visible evidence and public policy. Evidence is untrusted content, model output is parsed but never executed, asset and provider responses are bounded, API keys stay out of prompts and artifacts, mock grading is offline, and packaging excludes sensitive or transient files.
+Visible task packets remain separate from hidden grader data and physical references. Grading derives the expected decision independently from visible evidence and public policy. Evidence is untrusted content, model output is parsed but never executed, asset and provider responses are bounded, API keys stay out of prompts and artifacts, mock grading is offline, and packaging excludes sensitive or transient files. The adapter supplies a strict six-field JSON Schema while retaining deterministic local parsing and grading. The real run is labeled model evidence, while the earlier 404/400 artifacts remain provider-failure evidence and are excluded from model pass rates.
 
 ## Failed Attempts
 
-The first direct invocation of `scripts/test_all` lacked an executable bit and was rerun with `sh`; it passed. One security-test fixture was corrected because its first version did not force a semantic grade failure, and one hash-comparison helper was corrected to use the actual `deterministic_grade_hash` field; the final checks pass.
+The first direct invocation of `scripts/test_all` lacked an executable bit and was rerun with `sh`; it passed. One security-test fixture was corrected because its first version did not force a semantic grade failure, and one hash-comparison helper was corrected to use the actual `deterministic_grade_hash` field; the final checks pass. The initial real adapter request used the base URL and returned HTTP 404. The next request included `temperature=0` and returned sanitized HTTP 400 `invalid_request_error` / `unsupported_value` for `temperature`. The first corrected CS-001 response was valid JSON but used `recommended_action=do_not_enforce`, causing `schema_failure`; no output was repaired or counted as model evidence. After strict Structured Outputs was enabled, all 24 benchmark requests returned parseable outputs.
 
 ## Known Bugs
 
-No known deterministic grader or packaging bug is blocking the handoff. Real-provider behavior, credential handling outside this repository, service-side retention, and deployment controls remain unverified until real-model trials and provider review.
+No known adapter, deterministic grader, or packaging bug is blocking the handoff. The model failed CS-002 in all three trials: it correctly identified occupancy and current-zone evidence but abstained on violation status where the deterministic decision derives `no_violation`; observed categories were `wrong_violation_status`, `wrong_recommended_action`, `temporal_failure`, `stale_evidence_failure`, and `calibration_failure`. No unsafe action, failure to abstain, hallucinated/invalid evidence reference, contradiction failure, or format/schema failure occurred. Service-side retention, broader model behavior, and deployment controls remain unknown. The private `.env` remains temporary, ignored, and must be removed before commit.
 
 ## Next Step
 
-The exact next step is security verification followed by real-model trials. Security verification must finish first; this task runs no real-model trials and makes no submission-readiness claim.
+The exact next step is final diff review, removal of the temporary `.env`, commit `eval: add controlled real-model evidence`, push to `origin/main`, and exact local/remote SHA verification. This handoff does not claim universal model superiority or submission readiness.

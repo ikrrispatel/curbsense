@@ -1,9 +1,21 @@
 .venv/
 __pycache__/
 *.pyc
+# Local secrets and credential files
 .env
+.env.*
+!.env.example
+**/credentials
+**/credentials.*
+**/*credentials*
+**/api-key*
+**/*api-key*
+**/api_key*
+**/*api_key*
 results/*.json
 results/*.md
+results/**/*.json
+results/**/*.md
 !results/README.md
 transcripts/*.jsonl
 submission.zip
