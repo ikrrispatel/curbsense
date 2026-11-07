@@ -1,8 +1,12 @@
 {
-  "task_id":"CS-003","version":"1.0","family":"ocr_error","timezone":"America/Los_Angeles",
-  "question":"At 11:20 local time, assess the vehicle using the evidence packet. Treat the OCR read as uncertain when the camera image contradicts one character.",
-  "evidence":[{"id":"camera_003","type":"camera","observed_at":"2026-11-07T11:20:00-08:00","content":"Synthetic SVG: the visible plate characters are ABC123 and the vehicle is in a paid space."},{"id":"ocr_001","type":"ocr","observed_at":"2026-11-07T11:20:02-08:00","content":"OCR read: ABC128, confidence 0.62; the final character is visually ambiguous."},{"id":"payment_003","type":"payment","observed_at":"2026-11-07T11:19:00-08:00","content":"Active payment for plate ABC123 through 12:00 local."}],
-  "visible_schema":{"type":"object","additionalProperties":false,"required":["occupancy_status","violation_status","evidence_used","confidence","recommended_action","reason"]},
-  "gold_answer":{"occupancy_status":"occupied","violation_status":"no_violation","evidence_used":["camera_003","payment_003"],"confidence":0.86,"recommended_action":"do_nothing","reason":"The camera and active payment identify ABC123; the low-confidence OCR mismatch is not enough to establish a violation."},
-  "acceptable_alternatives":[],"rubric":{"required_evidence":["camera_003","payment_003"],"relevant_evidence":["camera_003","ocr_001","payment_003"],"confidence_band":[0.75,0.95]}
+  "task_id":"CS-003","version":"1.0","family":"ocr_error","timezone":"America/Los_Angeles","decision_time":"2026-11-07T11:20:00-08:00",
+  "question":"Assess the vehicle while treating a low-confidence OCR mismatch as uncertain when the visual plate and payment record agree.",
+  "public_rules":{"ocr_confidence_threshold":0.80,"freshness_limit_seconds":3600,"required_action_if_unresolved":"request_review","contradiction_policy":"request_review","evidence_priority":["camera","payment","ocr"],"confidence_policy":{"resolved_confidence":0.86,"resolved_min":0.75,"unresolved_max":0.80}},
+  "evidence":[
+    {"id":"camera_003","type":"camera","asset_path":"tasks/v1/assets/camera_003.svg","observed_at":"2026-11-07T11:20:00-08:00","occupancy":"occupied","plate":"ABC123","supports":["occupancy","ocr"]},
+    {"id":"ocr_001","type":"ocr","observed_at":"2026-11-07T11:20:02-08:00","read":"ABC128","ocr_confidence":0.62,"supports":["ocr"],"content":"Final character is visually ambiguous."},
+    {"id":"payment_003","type":"payment","payment_event_time":"2026-11-07T11:19:00-08:00","valid_until":"2026-11-07T12:00:00-08:00","plate":"ABC123","supports":["payment","violation"]},
+    {"id":"zone_003","type":"zone_rule","effective_at":"2026-11-07T11:00:00-08:00","zone_status":"metered","supports":["zone","payment"]}
+  ],
+  "visible_schema":{"type":"object","additionalProperties":false,"required":["occupancy_status","violation_status","evidence_used","confidence","recommended_action","reason"]}
 }

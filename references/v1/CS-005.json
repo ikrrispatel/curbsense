@@ -1,0 +1,1 @@
+{"occupancy_status":"unknown","violation_status":"unknown","evidence_used":["camera_005","sensor_005","zone_005"],"confidence":0.72,"recommended_action":"request_review","reason":"Camera and sensor evidence disagree within the sensor lag window, so occupancy and violation status remain unknown and require review."}

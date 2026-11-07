@@ -1,0 +1,1 @@
+{"occupancy_status":"occupied","violation_status":"no_violation","evidence_used":["camera_001","zone_001","arrival_001"],"confidence":0.97,"recommended_action":"do_nothing","reason":"The vehicle arrived at 09:01 and the five-minute grace period has not ended at 09:05."}

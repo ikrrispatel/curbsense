@@ -1,8 +1,16 @@
 from __future__ import annotations
-import json, os, time, urllib.request
+
+import json
+import os
+import time
+import urllib.parse
+import urllib.request
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
+
 from .schema import visible_packet
+
 
 @dataclass
 class RunnerResult:
@@ -11,25 +19,44 @@ class RunnerResult:
     latency_ms: int
     error: str | None = None
     model: str = "unknown"
+    model_version: str = "unknown"
+    settings: dict[str, Any] | None = None
     tokens: dict[str, int] | None = None
 
-def mock(task: dict[str, Any]) -> RunnerResult:
-    # Deliberately imperfect but deterministic: one safe error exposes the metric taxonomy.
-    answer = task["reference_solution"].copy()
-    if task["task_id"] == "CS-003": answer["confidence"] = 0.61
-    return RunnerResult(json.dumps(answer, sort_keys=True), "ok", 0, model="mock-v1", tokens={"input": 0, "output": 0})
 
-def openai_compatible(task: dict[str, Any]) -> RunnerResult:
-    url, key = os.environ.get("CURBSENSE_MODEL_URL"), os.environ.get("CURBSENSE_API_KEY")
-    if not url or not key: return RunnerResult(None, "runner_error", 0, "CURBSENSE_MODEL_URL and CURBSENSE_API_KEY are required", os.environ.get("CURBSENSE_MODEL_NAME", "unconfigured"))
-    body = {"model": os.environ.get("CURBSENSE_MODEL_NAME", "unknown"), "temperature": 0, "messages": [{"role": "system", "content": "Return only the requested JSON object."}, {"role": "user", "content": json.dumps(visible_packet(task), sort_keys=True)}]}
+def mock(task: dict[str, Any], reference: dict[str, Any], _root: Path) -> RunnerResult:
+    answer = dict(reference)
+    # Harness fixture only: one controlled calibration miss proves reports can
+    # expose a failing trial; it is not real-model evidence.
+    if task["task_id"] == "CS-003":
+        answer["confidence"] = 0.61
+    return RunnerResult(json.dumps(answer, sort_keys=True), "ok", 0, model="mock-v1", model_version="fixture", settings={"temperature": 0}, tokens={"input": 0, "output": 0})
+
+
+def _safe_error(message: str, key: str | None, url: str | None) -> str:
+    value = message.replace(key or "__never__", "[REDACTED]")
+    if url:
+        parsed = urllib.parse.urlsplit(url)
+        safe_url = urllib.parse.urlunsplit((parsed.scheme, parsed.netloc, parsed.path, "", ""))
+        value = value.replace(url, safe_url)
+    return value[:500]
+
+
+def openai_compatible(task: dict[str, Any], root: Path) -> RunnerResult:
+    url = os.environ.get("CURBSENSE_MODEL_URL")
+    key = os.environ.get("CURBSENSE_API_KEY")
+    model = os.environ.get("CURBSENSE_MODEL_NAME", "unconfigured")
+    settings = {"temperature": 0, "timeout_seconds": 60}
+    if not url or not key:
+        return RunnerResult(None, "runner_error", 0, "model URL and API key are required", model, model, settings)
+    body = {"model": model, "temperature": 0, "messages": [{"role": "system", "content": "Return only the requested JSON object."}, {"role": "user", "content": json.dumps(visible_packet(task, root), sort_keys=True)}]}
     started = time.monotonic()
     try:
-        req = urllib.request.Request(url, data=json.dumps(body).encode(), headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"})
-        with urllib.request.urlopen(req, timeout=60) as response:
+        request = urllib.request.Request(url, data=json.dumps(body).encode("utf-8"), headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"})
+        with urllib.request.urlopen(request, timeout=60) as response:
             payload = json.loads(response.read())
         content = payload["choices"][0]["message"]["content"]
         usage = payload.get("usage", {})
-        return RunnerResult(content, "ok", int((time.monotonic() - started) * 1000), model=body["model"], tokens={"input": usage.get("prompt_tokens", 0), "output": usage.get("completion_tokens", 0)})
+        return RunnerResult(content, "ok", int((time.monotonic() - started) * 1000), model=model, model_version=model, settings=settings, tokens={"input": usage.get("prompt_tokens", 0), "output": usage.get("completion_tokens", 0)})
     except Exception as exc:
-        return RunnerResult(None, "runner_error", int((time.monotonic() - started) * 1000), f"{type(exc).__name__}: {exc}", body["model"])
+        return RunnerResult(None, "runner_error", int((time.monotonic() - started) * 1000), _safe_error(f"{type(exc).__name__}: {exc}", key, url), model, model, settings)

@@ -1,48 +1,45 @@
 {
-  "failures": [],
   "manifest": [
     {
-      "prompt_hash": "348d7c10b4ac9ed0a2225e305fea64f5344810df2f2ebee007108da1183831e2",
-      "task_hash": "5a9bb904d0c595a4810ad7cc56f6bb1bcdff680639d6e1d5557c221ddc516036",
+      "prompt_hash": "13830da19127ab9707032f3d6f1053413beb10e485ed3582bbc39da8a4519cfd",
+      "task_hash": "c506423391196fd32389637a3bc77721b7ba5badaf4c74dd21ce77bfc7d584a6",
       "task_id": "CS-001"
     },
     {
-      "prompt_hash": "f011a0674e086170bf1481f2bd91b494b6523bc79bdb723a693db3043b240860",
-      "task_hash": "453eb9ee39fa63c0135d4c2ab770bc967fd4c5f33f94265d0cf10215c42a2c78",
+      "prompt_hash": "db297d0add72c020c4359bbe598cc88c7d5e955e9856ab311aaad9fa1400097e",
+      "task_hash": "dd434032ac72b102e6105911d2f8a6978e73f411110c939efd96b4dcd9c578c6",
       "task_id": "CS-002"
     },
     {
-      "prompt_hash": "e86f85451a91f5404c0ca20d57a288652f99142858a0aae7ed6e93031040ddc4",
-      "task_hash": "9d60f9eac1d95a0d6831e61d78fbb10c9f9ea023c862c8fefe4bb2a7088d03d9",
+      "prompt_hash": "33bd13e438e67ce7539ccc51ebbedfff81321e1bd334ed6e967d63321bbc764b",
+      "task_hash": "9628e698906bb513ed75441784d2c3158fa0fb6e5bfcdb9911158a57ad0918f2",
       "task_id": "CS-003"
     },
     {
-      "prompt_hash": "bb8a1959d0d792c37e430ad9710ea1a0ec4a5cc3ea94ec4a8ea3c922ff25585c",
-      "task_hash": "949bbcae46c364e78f7e3c3cdc625323ca82b7b0a263993b2c1cd405170d4b68",
+      "prompt_hash": "c4735019565b1870127c7ec99eec9ff33bfa0bb0cd72f935454717eae053397b",
+      "task_hash": "f101234b9fe9eafde356c88f39fcb7c93c8df4ba26c9890743ae60a9951476f3",
       "task_id": "CS-004"
     },
     {
-      "prompt_hash": "ad77b4a71ac0b0497b887c614b8ec6633432078d5f4de037ec8622576dfa2775",
-      "task_hash": "01c5bf57343cf906c558009a080f9d6d3f29d25d14613fb5a4d223e333db93bc",
+      "prompt_hash": "c8301d565263d622490f116217b8796a23d8fcad3fea777c87a16c3af97d3471",
+      "task_hash": "e04d62f5eff31ef44b455f9a46b69a02c1dca69b0443a75acf98ae5bc52fbcc4",
       "task_id": "CS-005"
     },
     {
-      "prompt_hash": "7cfdb821f2a8ba7fcf31f7251baa288738292db18d470f1459574f8deb7146df",
-      "task_hash": "dfb61f1845a84a940459619ff6a15f5463127a5495fa77df208324647036548f",
+      "prompt_hash": "abdbec2b3055f80bf17f4978815618b904d49262bcb94c82e4775d3439bc49fe",
+      "task_hash": "47f718a27de7478e7f3862157a2e083a0003e3bdc4c43956fad49ac2976c85d4",
       "task_id": "CS-006"
     },
     {
-      "prompt_hash": "8ea510038eb7f519ae01bf6a7c971e890b83aaab99f9f05ca38075fd6ba3a9fe",
-      "task_hash": "46a3d5461debd8f50022a732b7ce933d17d6e8d404c774fc801ffe5ed30972e6",
+      "prompt_hash": "44d3a7cf94f81d7f2f419f11395c629a67d15d9021601413347044e8de9932a3",
+      "task_hash": "19b65904186f17b4c69e0999d7bbc2990d6513811ef70e7c48ac23560e041f08",
       "task_id": "CS-007"
     },
     {
-      "prompt_hash": "56a283fb07061db2555060a380c74b51b5e4b9e2d6d2e9bcf78ede0bad517480",
-      "task_hash": "6c4904e01bd6da9bee022d1e6ff85dd676c59ce460dc714d63ff2dfd4983f56a",
+      "prompt_hash": "e041904f05b9bad91f3c8d11ff615218f2402a07557734f2b895720c1d7d8934",
+      "task_hash": "a3d497ba8f5dc306b78b7791ebd25a89ebd7bf42b9010532c2619bfde6bd8f11",
       "task_id": "CS-008"
     }
   ],
-  "passed": true,
-  "schema_version": "1.0",
-  "task_count": 8
+  "schema_version": "2.0"
 }

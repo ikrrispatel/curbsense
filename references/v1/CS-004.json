@@ -1,0 +1,1 @@
+{"occupancy_status":"occupied","violation_status":"no_violation","evidence_used":["camera_004","payment_004","meter_004"],"confidence":0.98,"recommended_action":"do_nothing","reason":"Payment succeeded at 12:08, before the 12:10 observation; delayed ingestion does not make it invalid."}

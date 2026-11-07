@@ -1,0 +1,1 @@
+{"occupancy_status":"occupied","violation_status":"no_violation","evidence_used":["camera_003","payment_003"],"confidence":0.86,"recommended_action":"do_nothing","reason":"The camera and active payment identify ABC123; the low-confidence OCR mismatch is not enough to establish a violation."}

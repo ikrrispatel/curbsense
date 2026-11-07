@@ -1,0 +1,1 @@
+{"occupancy_status":"occupied","violation_status":"unknown","evidence_used":["camera_008"],"confidence":0.65,"recommended_action":"abstain","reason":"Occupancy is visible, but no current zone rule or entitlement record establishes a violation; abstain and request the missing evidence."}

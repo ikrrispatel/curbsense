@@ -1,28 +1,46 @@
 # CurbSense
 
-CurbSense is a deterministic evaluation suite for a practical safety limitation: whether an AI model makes evidence-grounded curb and parking decisions when camera, occupancy, payment, permit, zone, and timestamp records conflict.
-
-It is an evaluation product, not a parking application, enforcement system, or ticketing tool. The eight MVP tasks use synthetic records and deterministic camera diagrams only.
+CurbSense evaluates whether AI models make safe, evidence-grounded curb and parking decisions when camera, occupancy, payment, permit, OCR, zone, and timestamp evidence conflict. It is an evaluation product, not an enforcement or ticketing system.
 
 ## Quick start
 
-Requires Python 3.10+ and no network access for validation or mock runs.
+Python 3.10+ is required. Deterministic validation and the mock suite use only the standard library and no network.
 
 ```bash
 python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install -r requirements.txt
 python scripts/validate_tasks.py
-python scripts/run_eval.py --runner mock --trials 3 --output results/mock.json
-python scripts/report.py results/mock.json --markdown results/mock.md
+python scripts/build_manifest.py
+python scripts/run_eval.py --runner mock --trials 3 --output /tmp/curbsense-mock.json
+python scripts/report.py /tmp/curbsense-mock.json --markdown /tmp/curbsense-mock.md
 python -m unittest discover -s tests -v
 ```
 
-The mock runner is deterministic. The optional real adapter uses `CURBSENSE_MODEL_URL`, `CURBSENSE_MODEL_NAME`, and `CURBSENSE_API_KEY` from the environment; credentials are never included in packets or artifacts.
+Validation is read-only. The manifest is written only by the explicit build command.
 
-## Model contract
+## Data separation
 
-The visible packet asks for exactly this JSON object:
+- `tasks/v1/` contains only model-visible packets: question, public structured rules, evidence, timezone, output schema, and linked deterministic SVG assets.
+- `grader_data/v1/` contains hidden evidence requirements and gold answers used to audit the derived oracle.
+- `references/v1/` contains physical reference outputs.
+
+The model never receives hidden grader data or reference files. The deterministic decision engine independently derives occupancy, violation status, and safe action from visible evidence and policy fields. Validation fails if hidden gold disagrees with that derivation. Grading does not compare model output directly to gold.
+
+## Task families
+
+1. Grace-period ambiguity.
+2. Wrong or stale zone.
+3. OCR error.
+4. Delayed payment record.
+5. Occupancy disagreement.
+6. Valid permit with conflicting visual evidence.
+7. Duplicate or contradictory records.
+8. Insufficient evidence requiring abstention.
+
+Every camera evidence record has an explicit asset path, and all eight deterministic SVG assets are included in the visible packet when running.
+
+## Output schema
 
 ```json
 {
@@ -35,35 +53,16 @@ The visible packet asks for exactly this JSON object:
 }
 ```
 
-Gold answers and rubric internals are stored outside the model-visible prompt. The strict parser rejects malformed JSON, unknown fields, invalid enums, out-of-range confidence, and invented evidence references. The deterministic grader never calls an LLM, uses current time, network, randomness, or hidden reasoning.
+The parser rejects malformed or markdown-wrapped JSON, unknown fields, invalid enums, invalid confidence, duplicate or invented evidence, empty or oversized reasons, and unsupported evidence claims. Raw output remains in the run record on every failure.
 
-## Task families
+## Metrics and reproducibility
 
-| ID | Family | Core difficulty |
-|---|---|---|
-| CS-001 | Grace-period ambiguity | Boundary timestamps must not become premature enforcement. |
-| CS-002 | Wrong or stale zone | A stale zone record cannot override the current zone rule. |
-| CS-003 | OCR error | Visual evidence and a noisy plate read must be reconciled. |
-| CS-004 | Delayed payment record | Payment event time and ingestion time are different facts. |
-| CS-005 | Occupancy disagreement | A fresh sensor disagreement requires review, not certainty. |
-| CS-006 | Valid permit with conflicting visual evidence | A valid permit changes the decision even when visual cues look adverse. |
-| CS-007 | Duplicate or contradictory records | Duplicate events and equal-time contradictions require review. |
-| CS-008 | Insufficient evidence | Missing decisive evidence requires abstention. |
+Reports include pass rate, unsafe-action rate, failure-to-abstain rate, hallucinated-evidence rate, temporal-failure rate, stale/payment/permit/zone/contradiction failures, format-failure rate, runner-error rate, per-task/model results, trial variance, pass@k, pass^k, Brier calibration, ECE, and a deterministic report hash.
 
-At least three tasks include deterministic SVG camera diagrams. No real plates, faces, addresses, payments, or operational records are used.
+Each record separates deterministic identity hashes—task, prompt, grader version, normalized output, and grade—from volatile timestamp and latency metadata. The mock runner is labeled `mock_harness_validation`; it is not real-model evidence. Real-model trials require environment variables from `.env.example`, clean repeated runs, transcripts, cost/runtime reporting, and manual review.
 
-## Metrics and artifacts
+## Attribution and limitations
 
-Reports include safe decision pass rate, unsafe-action rate, failure-to-abstain rate, hallucinated-evidence rate, temporal-reasoning failure rate, contradiction-detection rate, format-failure rate, confidence calibration, runner-error rate, per-task results, per-model results, trial variance, pass@k, and pass^k. Each trial records task/prompt hashes, model identity and settings, grader version, environment metadata, timestamp, latency, token/cost data when available, raw and normalized output, grade, and failure categories.
+CurbSense adapts selected harness and reproducibility patterns from the MIT-licensed [`BRYANN2K/llm-engineering-benchmark`](https://github.com/BRYANN2K/llm-engineering-benchmark) by Bryan N. See [ADAPTATION.md](ADAPTATION.md), [ARCHITECTURE.md](ARCHITECTURE.md), [AI_RULES.md](AI_RULES.md), [PLAN.md](PLAN.md), and [PRD.md](PRD.md).
 
-Runner errors are separate from model failures. A reproducibility bundle can be made with `python scripts/package_submission.py`; it excludes secrets, caches, virtual environments, and videos and fails if the ZIP reaches 50 MB.
-
-## Provenance and attribution
-
-CurbSense adapts selected open-source harness and reproducibility patterns from the MIT-licensed [`BRYANN2K/llm-engineering-benchmark`](https://github.com/BRYANN2K/llm-engineering-benchmark) by Bryan N.: frozen manifests, identity hashes, runner boundaries, timeout/error separation, artifact checksums, validation, and aggregate reporting. Coding-agent tasks, patch grading, Hermes assumptions, pricing logic, private-grader commitments, and unrelated historical reports were removed. Original CurbSense task packets, evidence design, deterministic safety grader, metrics, synthetic camera diagrams, tests, and reports are new work.
-
-See `ATTRIBUTION.md` for the adaptation record. CurbSense is MIT licensed. AI tools assisted with implementation and drafting; the author remains responsible for reviewing every task, reference solution, grading rule, transcript, and result before submission.
-
-## Limitations and submission status
-
-Eight synthetic tasks cannot establish universal model superiority. Real-model results must be generated with clean repeated trials and manually inspected transcripts before any model claim is made. The repository includes the code and offline validation path; a real model run, public video link, and final HackerRank submission remain external submission activities unless recorded in `results/`.
+AI tools assisted with implementation and drafting. Human review of every task, policy, reference, grading rule, transcript, and result is required. Eight synthetic tasks cannot establish universal model superiority.
