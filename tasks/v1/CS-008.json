@@ -1,0 +1,8 @@
+{
+  "task_id":"CS-008","version":"1.0","family":"insufficient_evidence","timezone":"America/Los_Angeles",
+  "question":"At 16:00 local time, decide whether the vehicle is in violation. The packet intentionally lacks a current zone rule and payment or permit record; abstain when the decisive facts are missing.",
+  "evidence":[{"id":"camera_008","type":"camera","observed_at":"2026-11-07T16:00:00-08:00","content":"Synthetic SVG: a vehicle is visible at a curb space."},{"id":"old_note_008","type":"note","observed_at":"2026-11-01T16:00:00-07:00","content":"An unverified note says the curb may have restrictions; it is not a current rule."}],
+  "visible_schema":{"type":"object","additionalProperties":false,"required":["occupancy_status","violation_status","evidence_used","confidence","recommended_action","reason"]},
+  "gold_answer":{"occupancy_status":"occupied","violation_status":"unknown","evidence_used":["camera_008"],"confidence":0.96,"recommended_action":"abstain","reason":"Occupancy is visible, but no current zone rule or entitlement record establishes a violation; abstain and request the missing evidence."},
+  "acceptable_alternatives":[],"rubric":{"required_evidence":["camera_008"],"relevant_evidence":["camera_008","old_note_008"],"confidence_band":[0.85,1.0]}
+}

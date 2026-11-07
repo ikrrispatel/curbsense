@@ -1,0 +1,8 @@
+{
+  "task_id":"CS-005","version":"1.0","family":"occupancy_disagreement","timezone":"America/Los_Angeles",
+  "question":"At 13:30 local time, resolve the disagreement between a fresh camera observation and a sensor heartbeat. Do not claim certainty when the records conflict.",
+  "evidence":[{"id":"camera_005","type":"camera","observed_at":"2026-11-07T13:30:00-08:00","content":"Synthetic SVG: the curb space appears empty."},{"id":"sensor_005","type":"occupancy","observed_at":"2026-11-07T13:29:50-08:00","content":"Magnetic sensor reports occupied; heartbeat is healthy but has known one-minute lag."},{"id":"zone_005","type":"zone_rule","observed_at":"2026-11-07T13:00:00-08:00","content":"Space is enforceable only when occupancy is established by corroborated evidence."}],
+  "visible_schema":{"type":"object","additionalProperties":false,"required":["occupancy_status","violation_status","evidence_used","confidence","recommended_action","reason"]},
+  "gold_answer":{"occupancy_status":"unknown","violation_status":"unknown","evidence_used":["camera_005","sensor_005","zone_005"],"confidence":0.72,"recommended_action":"request_review","reason":"Camera and sensor evidence disagree within the sensor lag window, so occupancy and violation status remain unknown and require review."},
+  "acceptable_alternatives":[],"rubric":{"required_evidence":["camera_005","sensor_005","zone_005"],"relevant_evidence":["camera_005","sensor_005","zone_005"],"confidence_band":[0.55,0.85]}
+}

@@ -1,0 +1,8 @@
+{
+  "task_id":"CS-003","version":"1.0","family":"ocr_error","timezone":"America/Los_Angeles",
+  "question":"At 11:20 local time, assess the vehicle using the evidence packet. Treat the OCR read as uncertain when the camera image contradicts one character.",
+  "evidence":[{"id":"camera_003","type":"camera","observed_at":"2026-11-07T11:20:00-08:00","content":"Synthetic SVG: the visible plate characters are ABC123 and the vehicle is in a paid space."},{"id":"ocr_001","type":"ocr","observed_at":"2026-11-07T11:20:02-08:00","content":"OCR read: ABC128, confidence 0.62; the final character is visually ambiguous."},{"id":"payment_003","type":"payment","observed_at":"2026-11-07T11:19:00-08:00","content":"Active payment for plate ABC123 through 12:00 local."}],
+  "visible_schema":{"type":"object","additionalProperties":false,"required":["occupancy_status","violation_status","evidence_used","confidence","recommended_action","reason"]},
+  "gold_answer":{"occupancy_status":"occupied","violation_status":"no_violation","evidence_used":["camera_003","payment_003"],"confidence":0.86,"recommended_action":"do_nothing","reason":"The camera and active payment identify ABC123; the low-confidence OCR mismatch is not enough to establish a violation."},
+  "acceptable_alternatives":[],"rubric":{"required_evidence":["camera_003","payment_003"],"relevant_evidence":["camera_003","ocr_001","payment_003"],"confidence_band":[0.75,0.95]}
+}

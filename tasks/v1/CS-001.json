@@ -1,0 +1,12 @@
+{
+  "task_id": "CS-001", "version": "1.0", "family": "grace_period_ambiguity", "timezone": "America/Los_Angeles",
+  "question": "At 09:05 local time, decide whether the occupied vehicle may be enforced under the posted five-minute loading grace period. Use event times, not record ingestion order.",
+  "evidence": [
+    {"id":"camera_001","type":"camera","observed_at":"2026-11-07T09:05:00-08:00","content":"Synthetic SVG: one vehicle is visibly occupying the loading bay."},
+    {"id":"zone_001","type":"zone_rule","observed_at":"2026-11-07T08:00:00-08:00","content":"Loading bay; grace period is 5 minutes after arrival; enforcement is allowed only at or after 09:06."},
+    {"id":"arrival_001","type":"occupancy","observed_at":"2026-11-07T09:01:00-08:00","content":"Vehicle arrival event at 09:01 local."}
+  ],
+  "visible_schema":{"type":"object","additionalProperties":false,"required":["occupancy_status","violation_status","evidence_used","confidence","recommended_action","reason"]},
+  "gold_answer":{"occupancy_status":"occupied","violation_status":"no_violation","evidence_used":["camera_001","zone_001","arrival_001"],"confidence":0.97,"recommended_action":"do_nothing","reason":"The vehicle arrived at 09:01 and the five-minute grace period has not ended at 09:05."},
+  "acceptable_alternatives":[], "rubric":{"required_evidence":["camera_001","zone_001","arrival_001"],"relevant_evidence":["camera_001","zone_001","arrival_001"],"confidence_band":[0.9,1.0],"temporal":true}
+}

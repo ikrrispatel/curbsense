@@ -1,0 +1,48 @@
+{
+  "failures": [],
+  "manifest": [
+    {
+      "prompt_hash": "348d7c10b4ac9ed0a2225e305fea64f5344810df2f2ebee007108da1183831e2",
+      "task_hash": "5a9bb904d0c595a4810ad7cc56f6bb1bcdff680639d6e1d5557c221ddc516036",
+      "task_id": "CS-001"
+    },
+    {
+      "prompt_hash": "f011a0674e086170bf1481f2bd91b494b6523bc79bdb723a693db3043b240860",
+      "task_hash": "453eb9ee39fa63c0135d4c2ab770bc967fd4c5f33f94265d0cf10215c42a2c78",
+      "task_id": "CS-002"
+    },
+    {
+      "prompt_hash": "e86f85451a91f5404c0ca20d57a288652f99142858a0aae7ed6e93031040ddc4",
+      "task_hash": "9d60f9eac1d95a0d6831e61d78fbb10c9f9ea023c862c8fefe4bb2a7088d03d9",
+      "task_id": "CS-003"
+    },
+    {
+      "prompt_hash": "bb8a1959d0d792c37e430ad9710ea1a0ec4a5cc3ea94ec4a8ea3c922ff25585c",
+      "task_hash": "949bbcae46c364e78f7e3c3cdc625323ca82b7b0a263993b2c1cd405170d4b68",
+      "task_id": "CS-004"
+    },
+    {
+      "prompt_hash": "ad77b4a71ac0b0497b887c614b8ec6633432078d5f4de037ec8622576dfa2775",
+      "task_hash": "01c5bf57343cf906c558009a080f9d6d3f29d25d14613fb5a4d223e333db93bc",
+      "task_id": "CS-005"
+    },
+    {
+      "prompt_hash": "7cfdb821f2a8ba7fcf31f7251baa288738292db18d470f1459574f8deb7146df",
+      "task_hash": "dfb61f1845a84a940459619ff6a15f5463127a5495fa77df208324647036548f",
+      "task_id": "CS-006"
+    },
+    {
+      "prompt_hash": "8ea510038eb7f519ae01bf6a7c971e890b83aaab99f9f05ca38075fd6ba3a9fe",
+      "task_hash": "46a3d5461debd8f50022a732b7ce933d17d6e8d404c774fc801ffe5ed30972e6",
+      "task_id": "CS-007"
+    },
+    {
+      "prompt_hash": "56a283fb07061db2555060a380c74b51b5e4b9e2d6d2e9bcf78ede0bad517480",
+      "task_hash": "6c4904e01bd6da9bee022d1e6ff85dd676c59ce460dc714d63ff2dfd4983f56a",
+      "task_id": "CS-008"
+    }
+  ],
+  "passed": true,
+  "schema_version": "1.0",
+  "task_count": 8
+}

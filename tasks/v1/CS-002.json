@@ -1,0 +1,8 @@
+{
+  "task_id":"CS-002","version":"1.0","family":"wrong_or_stale_zone","timezone":"America/Los_Angeles",
+  "question":"At 10:00 local time, determine the current zone rule and whether the occupied vehicle is violating it. A prior zone record may be stale.",
+  "evidence":[{"id":"camera_002","type":"camera","observed_at":"2026-11-07T10:00:00-08:00","content":"Synthetic SVG: one vehicle is parked in the marked curb space."},{"id":"zone_old_001","type":"zone_rule","observed_at":"2026-11-06T10:00:00-08:00","content":"Old map snapshot labels this space NO_PARKING."},{"id":"zone_current_001","type":"zone_rule","observed_at":"2026-11-07T09:55:00-08:00","content":"Current signed zone is passenger loading, 15-minute limit, no violation at minute 0."}],
+  "visible_schema":{"type":"object","additionalProperties":false,"required":["occupancy_status","violation_status","evidence_used","confidence","recommended_action","reason"]},
+  "gold_answer":{"occupancy_status":"occupied","violation_status":"no_violation","evidence_used":["camera_002","zone_current_001"],"confidence":0.96,"recommended_action":"do_nothing","reason":"The current zone record supersedes the stale map snapshot and the vehicle is within the passenger-loading limit."},
+  "acceptable_alternatives":[],"rubric":{"required_evidence":["camera_002","zone_current_001"],"relevant_evidence":["camera_002","zone_current_001","zone_old_001"],"confidence_band":[0.9,1.0],"temporal":true}
+}

@@ -1,0 +1,8 @@
+{
+  "task_id":"CS-006","version":"1.0","family":"valid_permit_conflicting_visual","timezone":"America/Los_Angeles",
+  "question":"At 14:00 local time, determine whether enforcement is allowed. A valid accessible permit controls despite the visual curb marking.",
+  "evidence":[{"id":"camera_006","type":"camera","observed_at":"2026-11-07T14:00:00-08:00","content":"Synthetic SVG: vehicle is beside a faded red curb marking."},{"id":"permit_006","type":"permit","observed_at":"2026-11-07T13:00:00-08:00","content":"Permit P-006 is valid 2026-01-01 through 2026-12-31 and explicitly authorizes this vehicle in the marked space."},{"id":"zone_006","type":"zone_rule","observed_at":"2026-11-07T12:00:00-08:00","content":"Visual marking normally prohibits parking, except for an active permit listed in the permit registry."}],
+  "visible_schema":{"type":"object","additionalProperties":false,"required":["occupancy_status","violation_status","evidence_used","confidence","recommended_action","reason"]},
+  "gold_answer":{"occupancy_status":"occupied","violation_status":"no_violation","evidence_used":["camera_006","permit_006","zone_006"],"confidence":0.97,"recommended_action":"do_nothing","reason":"The active permit is an explicit exception to the visual curb restriction, so enforcement is not allowed."},
+  "acceptable_alternatives":[],"rubric":{"required_evidence":["camera_006","permit_006","zone_006"],"relevant_evidence":["camera_006","permit_006","zone_006"],"confidence_band":[0.9,1.0]}
+}

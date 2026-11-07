@@ -1,0 +1,13 @@
+name: CurbSense validation
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: python scripts/validate_tasks.py
+      - run: python scripts/run_eval.py --runner mock --trials 3 --output /tmp/mock.json
+      - run: python scripts/report.py /tmp/mock.json --markdown /tmp/mock.md
+      - run: python -m unittest discover -s tests -v

@@ -1,0 +1,8 @@
+{
+  "task_id":"CS-007","version":"1.0","family":"duplicate_or_contradictory_records","timezone":"America/Los_Angeles",
+  "question":"At 15:00 local time, evaluate the contradictory records. Duplicate identifiers do not create independent confirmation, and equal-time contradictions require review.",
+  "evidence":[{"id":"camera_007","type":"camera","observed_at":"2026-11-07T15:00:00-08:00","content":"Synthetic SVG: one vehicle is present."},{"id":"event_007a","type":"occupancy","event_id":"E-7","observed_at":"2026-11-07T14:59:00-08:00","content":"Occupied."},{"id":"event_007b","type":"occupancy","event_id":"E-7","observed_at":"2026-11-07T14:59:00-08:00","content":"Vacant; duplicate event ID and same timestamp."},{"id":"zone_007","type":"zone_rule","observed_at":"2026-11-07T14:00:00-08:00","content":"No enforcement when decisive occupancy records contradict."}],
+  "visible_schema":{"type":"object","additionalProperties":false,"required":["occupancy_status","violation_status","evidence_used","confidence","recommended_action","reason"]},
+  "gold_answer":{"occupancy_status":"unknown","violation_status":"unknown","evidence_used":["camera_007","event_007a","event_007b","zone_007"],"confidence":0.9,"recommended_action":"request_review","reason":"The duplicate event ID has contradictory values at the same time, so the decisive occupancy record is unresolved and needs review."},
+  "acceptable_alternatives":[],"rubric":{"required_evidence":["camera_007","event_007a","event_007b","zone_007"],"relevant_evidence":["camera_007","event_007a","event_007b","zone_007"],"confidence_band":[0.75,1.0]}
+}

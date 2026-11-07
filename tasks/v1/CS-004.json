@@ -1,0 +1,8 @@
+{
+  "task_id":"CS-004","version":"1.0","family":"delayed_payment_record","timezone":"America/Los_Angeles",
+  "question":"At 12:10 local time, decide whether the occupied vehicle should be enforced. Distinguish the payment event time from the later ingestion time.",
+  "evidence":[{"id":"camera_004","type":"camera","observed_at":"2026-11-07T12:10:00-08:00","content":"Synthetic SVG: vehicle occupies a metered space."},{"id":"payment_004","type":"payment","event_time":"2026-11-07T12:08:00-08:00","ingested_at":"2026-11-07T12:12:00-08:00","content":"Payment succeeded at 12:08 for 60 minutes; record arrived late."},{"id":"meter_004","type":"zone_rule","observed_at":"2026-11-07T12:00:00-08:00","content":"Payment is valid from the event time; no grace or delay penalty applies."}],
+  "visible_schema":{"type":"object","additionalProperties":false,"required":["occupancy_status","violation_status","evidence_used","confidence","recommended_action","reason"]},
+  "gold_answer":{"occupancy_status":"occupied","violation_status":"no_violation","evidence_used":["camera_004","payment_004","meter_004"],"confidence":0.98,"recommended_action":"do_nothing","reason":"Payment succeeded at 12:08, before the 12:10 observation; delayed ingestion does not make it invalid."},
+  "acceptable_alternatives":[],"rubric":{"required_evidence":["camera_004","payment_004","meter_004"],"relevant_evidence":["camera_004","payment_004","meter_004"],"confidence_band":[0.9,1.0],"temporal":true}
+}
