@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,8 @@ ENUMS = {
     "recommended_action": {"enforce", "warn", "do_nothing", "request_review", "abstain"},
 }
 MAX_REASON_LENGTH = 500
+MAX_ASSET_BYTES = 1_048_576
+UNSAFE_SVG = re.compile(r"<\s*script\b|javascript\s*:|\bon[a-z0-9_-]+\s*=", re.IGNORECASE)
 
 
 def canonical(value: Any) -> str:
@@ -36,6 +39,29 @@ def parse_timestamp(value: str) -> datetime:
     if parsed.tzinfo is None:
         raise ValueError(f"timestamp lacks timezone: {value}")
     return parsed
+
+
+def validate_svg_asset(root: Path, asset_path: str) -> list[str]:
+    path = Path(asset_path)
+    errors: list[str] = []
+    if path.is_absolute() or ".." in path.parts or path.parts[:3] != ("tasks", "v1", "assets") or path.suffix.lower() != ".svg":
+        return ["invalid_asset_path"]
+    assets_root = (root / "tasks" / "v1" / "assets").resolve()
+    resolved = (root / path).resolve()
+    try:
+        resolved.relative_to(assets_root)
+    except ValueError:
+        return ["invalid_asset_path"]
+    if not resolved.is_file():
+        return ["missing_asset"]
+    if resolved.stat().st_size > MAX_ASSET_BYTES:
+        errors.append("asset_too_large")
+    content = resolved.read_text(encoding="utf-8", errors="strict")
+    if "<svg" not in content[:512].lower():
+        errors.append("invalid_svg")
+    if UNSAFE_SVG.search(content):
+        errors.append("unsafe_svg_content")
+    return errors
 
 
 def parse_output(raw: str, evidence_ids: set[str]) -> tuple[dict[str, Any] | None, list[str]]:
@@ -104,9 +130,7 @@ def validate_task(task: dict[str, Any], root: Path) -> list[str]:
                 except ValueError as exc:
                     errors.append(f"invalid_timestamp:{item.get('id')}:{exc}")
         if item.get("asset_path"):
-            asset = root / item["asset_path"]
-            if not asset.is_file():
-                errors.append(f"missing_asset:{item.get('id')}:{item['asset_path']}")
+            errors.extend(f"{error}:{item.get('id')}:{item['asset_path']}" for error in validate_svg_asset(root, item["asset_path"]))
     rules = task.get("public_rules", {})
     for key in ("required_action_if_unresolved", "contradiction_policy", "evidence_priority"):
         if key not in rules:
@@ -124,7 +148,10 @@ def visible_packet(task: dict[str, Any], root: Path | None = None) -> dict[str, 
         for evidence in task.get("evidence", []):
             asset_path = evidence.get("asset_path")
             if asset_path:
-                path = root / asset_path
+                errors = validate_svg_asset(root, asset_path)
+                if errors:
+                    raise ValueError(f"invalid camera asset {asset_path}: {','.join(errors)}")
+                path = (root / asset_path).resolve()
                 assets.append({"evidence_id": evidence["id"], "asset_path": asset_path, "svg": path.read_text(encoding="utf-8")})
         if assets:
             packet["camera_assets"] = assets

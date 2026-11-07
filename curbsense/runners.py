@@ -11,6 +11,8 @@ from typing import Any
 
 from .schema import visible_packet
 
+MAX_RESPONSE_BYTES = 1_048_576
+
 
 @dataclass
 class RunnerResult:
@@ -54,7 +56,13 @@ def openai_compatible(task: dict[str, Any], root: Path) -> RunnerResult:
     try:
         request = urllib.request.Request(url, data=json.dumps(body).encode("utf-8"), headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"})
         with urllib.request.urlopen(request, timeout=60) as response:
-            payload = json.loads(response.read())
+            content_length = response.headers.get("Content-Length") if hasattr(response, "headers") else None
+            if content_length and int(content_length) > MAX_RESPONSE_BYTES:
+                raise ValueError("provider response exceeds size limit")
+            body_bytes = response.read(MAX_RESPONSE_BYTES + 1)
+            if len(body_bytes) > MAX_RESPONSE_BYTES:
+                raise ValueError("provider response exceeds size limit")
+            payload = json.loads(body_bytes)
         content = payload["choices"][0]["message"]["content"]
         usage = payload.get("usage", {})
         return RunnerResult(content, "ok", int((time.monotonic() - started) * 1000), model=model, model_version=model, settings=settings, tokens={"input": usage.get("prompt_tokens", 0), "output": usage.get("completion_tokens", 0)})

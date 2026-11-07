@@ -61,6 +61,15 @@ Reports include pass rate, unsafe-action rate, failure-to-abstain rate, hallucin
 
 Each record separates deterministic identity hashes—task, prompt, grader version, normalized output, and grade—from volatile timestamp and latency metadata. The mock runner is labeled `mock_harness_validation`; it is not real-model evidence. Real-model trials require environment variables from `.env.example`, clean repeated runs, transcripts, cost/runtime reporting, and manual review.
 
+## Security controls
+
+- Visible packets are built from `tasks/v1/` only; hidden grader data and physical references are not sent to the model.
+- Evidence is treated as untrusted data. Model output is parsed as strict JSON and is never executed.
+- Asset paths must remain under `tasks/v1/assets/`; SVGs are size-limited, UTF-8 validated, and rejected when they contain script or event-handler content.
+- The HTTP adapter uses a 60-second timeout, a 1 MiB response limit, bounded parsing, and redacted errors. API keys are sent only in the request header and are not written to prompts or reports.
+- Mock validation does not call the network. Validation is read-only; packaging excludes caches, virtual environments, `.env` files, videos, symlinks, and archive traversal paths.
+- The complete security audit is test-backed where possible. Real-provider behavior, credentials, service-side retention, and external deployment controls remain unknown until real-model trials and provider review.
+
 ## Attribution and limitations
 
 CurbSense adapts selected harness and reproducibility patterns from the MIT-licensed [`BRYANN2K/llm-engineering-benchmark`](https://github.com/BRYANN2K/llm-engineering-benchmark) by Bryan N. See [ADAPTATION.md](ADAPTATION.md), [ARCHITECTURE.md](ARCHITECTURE.md), [AI_RULES.md](AI_RULES.md), [PLAN.md](PLAN.md), and [PRD.md](PRD.md).

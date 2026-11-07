@@ -18,7 +18,11 @@ def main() -> int:
     root = Path(__file__).resolve().parents[1]
     files = []
     for path in root.rglob("*"):
+        if path.is_symlink():
+            raise SystemExit(f"symlinks are not allowed in the code package: {path}")
         if not path.is_file() or any(part in EXCLUDE for part in path.parts) or path.suffix == ".pyc" or path.suffix == ".zip":
+            continue
+        if path.name.startswith(".env") and path.name != ".env.example":
             continue
         if path.suffix.lower() in VIDEO_SUFFIXES:
             raise SystemExit(f"video files are not allowed in the code package: {path}")
