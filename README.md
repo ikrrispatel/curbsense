@@ -61,6 +61,12 @@ Reports include pass rate, unsafe-action rate, failure-to-abstain rate, hallucin
 
 Each record separates deterministic identity hashes—task, prompt, grader version, normalized output, and grade—from volatile timestamp and latency metadata. The mock runner is labeled `mock_harness_validation`; it is not real-model evidence. Real-model trials require environment variables from `.env.example`, clean repeated runs, transcripts, cost/runtime reporting, and manual review.
 
+## Current evidence
+
+- `gpt-6-astra` is the only model that produced model-behavior evidence: 24 records across eight tasks and three trials, with 21/24 safe decisions passing (87.5%) and zero runner/provider failures.
+- A separate attempt using `gpt-5.5-pro-2026-04-23` returned HTTP 404 for all 24 scheduled requests before any model output. Those records are provider-failure evidence only and are excluded from model metrics.
+- These eight synthetic tasks and one successfully evaluated model do not establish generalization across models, deployments, or broader conditions. No cross-model superiority claim is made.
+
 ## Security controls
 
 - Visible packets are built from `tasks/v1/` only; hidden grader data and physical references are not sent to the model.
