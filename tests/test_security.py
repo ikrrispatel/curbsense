@@ -33,6 +33,30 @@ class FakeResponse:
         return self.body
 
 
+def _repository_files(root: Path) -> list[str]:
+    """Return tracked files, or the safe file set available in an extracted package."""
+    try:
+        output = subprocess.check_output(
+            ["git", "ls-files", "-z"],
+            cwd=root,
+            stderr=subprocess.DEVNULL,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        excluded_parts = {".git", ".venv", "__pycache__"}
+        files = []
+        for path in root.rglob("*"):
+            relative = path.relative_to(root)
+            if not path.is_file() or path.is_symlink() or any(part in excluded_parts for part in relative.parts):
+                continue
+            if path.suffix == ".pyc" or path.name == "submission.zip":
+                continue
+            if path.name.startswith(".env") and path.name != ".env.example":
+                continue
+            files.append(relative.as_posix())
+        return sorted(files)
+    return [name for name in output.decode().split("\0") if name]
+
+
 class SecurityTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -42,7 +66,7 @@ class SecurityTests(unittest.TestCase):
         cls.references = load_references(cls.root)
 
     def test_tracked_files_have_no_secret_like_material(self):
-        tracked = subprocess.check_output(["git", "ls-files", "-z"], cwd=self.root).decode().split("\0")
+        tracked = _repository_files(self.root)
         patterns = (
             re.compile(r"BEGIN [A-Z ]+ PRIVATE KEY"),
             re.compile(r"\bsk-[A-Za-z0-9]{16,}\b"),
@@ -58,6 +82,15 @@ class SecurityTests(unittest.TestCase):
                 if pattern.search(text):
                     findings.append(name)
         self.assertEqual(findings, [])
+
+    def test_repository_file_scan_falls_back_without_git_metadata(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "safe.txt").write_text("safe", encoding="utf-8")
+            nested = root / "nested"
+            nested.mkdir()
+            (nested / "note.txt").write_text("safe", encoding="utf-8")
+            self.assertEqual(_repository_files(root), ["nested/note.txt", "safe.txt"])
 
     def test_visible_packet_excludes_hidden_data(self):
         forbidden = {"gold_answer", "required_evidence", "relevant_evidence", "reference_solution", "rubric", "hidden_rubric"}

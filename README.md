@@ -8,6 +8,10 @@ CurbSense is a deterministic evaluation harness for testing whether an AI model 
 
 [Audited handoff](HANDOFF.md) · [Task manifest](tasks/manifest.json) · [Architecture](ARCHITECTURE.md) · [Security tests](tests/test_security.py) · [Results policy](results/README.md)
 
+## Video walkthrough
+
+[Watch the synthetic evaluation walkthrough on YouTube](https://youtu.be/9iCfqLzDX8Y). This walkthrough demonstrates the evaluation harness and synthetic task flow; it is not a production deployment, parking operation, or generalization claim.
+
 > The generated real-run JSON, report, and sanitized transcript are preserved in the final submission package and are intentionally ignored by Git. The tracked handoff records the audited metrics, artifact names, and limitations without turning generated evidence into source code.
 
 ## What it is
